@@ -4,4 +4,4 @@
 
 2. it only surpport explicty little endian vr
 
-3. write in c++
+3. it was written in c++
