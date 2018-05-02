@@ -1,4 +1,4 @@
-# CodingFatman 2018-5-2 
+# DicomFileParser 
 
 1. write this code for a little girl's school work
 
