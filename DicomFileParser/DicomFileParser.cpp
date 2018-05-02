@@ -9,8 +9,19 @@
 
 int main()
 {
+	TCHAR  szFullPath[255];
+	ZeroMemory(szFullPath, 255);
+	GetModuleFileName(NULL, szFullPath, MAX_PATH);
+	(_tcsrchr(szFullPath, _T('\\')))[1] = 0;
+
+	std::string currentPath = BmpFileHelper::TCHAR2String(szFullPath);
+	currentPath.append("input.dcm");
+
 	DicomReader reader;
-	reader.LoadDicomFile("d:\\test.dcm");
+	reader.LoadDicomFile(currentPath);
+
+	std::cout << "按回车键结束程序";
+	getchar();
 
 	return 0;
 }
