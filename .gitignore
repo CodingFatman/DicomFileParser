@@ -22,6 +22,7 @@ x64/
 [Bb]uild[Ll]og.*
 .vs/applicationhost.config
 
+*.db
 *_i.c
 *_p.c
 *.ilk

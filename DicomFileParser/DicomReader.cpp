@@ -29,7 +29,7 @@ void DicomReader::LoadDicomFile(std::string dicomFileName)
 		bool isSupportTransferSyntax = ReadFileMetaInfo();
 		if (!isSupportTransferSyntax)
 		{
-			std::cout << "不支持的传输语法，目前仅支持显示VR小端字节序的传输语法";
+			std::cout << "unsupported transfer syntax. it only support explicity little endian vr";
 			getchar();
 		}
 		else
@@ -227,7 +227,7 @@ void DicomReader::ProcessPixelDataTag()
 		SavePixelDataTo8BitBmpFile(pixelData);
 	}
 
-	std::cout << patientName <<"的Dicom图像已经成功解析，并转存为BMP格式" << std::endl;
+	std::cout << patientName <<"'s dicom file was successfully prased, and converted into bmp file" << std::endl;
 }
 
 void DicomReader::DisplayDicomTagValue()

@@ -5,6 +5,7 @@
 #include "iostream"
 #include "fstream"
 #include "DicomReader.h"
+#include "windows.h"
 
 
 int main()
