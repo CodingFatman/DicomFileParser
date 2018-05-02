@@ -1,0 +1,17 @@
+﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (TestDicom.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  stdafx.cpp
+  DicomFileParser.cpp
+  DicomReader.cpp
+c:\users\ysg\documents\visual studio 2015\projects\testdicom\dicomfileparser\dicomreader.cpp(91): warning C4244: 'initializing': conversion from '__int64' to 'unsigned int', possible loss of data
+c:\users\ysg\documents\visual studio 2015\projects\testdicom\dicomfileparser\dicomreader.cpp(95): warning C4244: '=': conversion from '__int64' to 'unsigned int', possible loss of data
+c:\users\ysg\documents\visual studio 2015\projects\testdicom\dicomfileparser\dicomreader.cpp(184): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\ysg\documents\visual studio 2015\projects\testdicom\dicomfileparser\dicomreader.cpp(187): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\ysg\documents\visual studio 2015\projects\testdicom\dicomfileparser\dicomreader.cpp(228): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\ysg\documents\visual studio 2015\projects\testdicom\dicomfileparser\dicomreader.cpp(229): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\ysg\documents\visual studio 2015\projects\testdicom\dicomfileparser\dicomreader.cpp(236): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\ysg\documents\visual studio 2015\projects\testdicom\dicomfileparser\dicomreader.cpp(239): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  DataElement.cpp
+  BmpFileHelper.cpp
+  Generating Code...
+  DicomFileParser.vcxproj -> C:\Users\ysg\Documents\Visual Studio 2015\Projects\TestDicom\Debug\DicomFileParser.exe
+  DicomFileParser.vcxproj -> C:\Users\ysg\Documents\Visual Studio 2015\Projects\TestDicom\Debug\DicomFileParser.pdb (Full PDB)
