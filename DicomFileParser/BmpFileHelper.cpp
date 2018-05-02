@@ -1,44 +1,11 @@
 #include "stdafx.h"
 #include "BmpFileHelper.h"
-//#include "wingdi.h"
+#include  <direct.h>    
+#include  <stdio.h> 
+#include "iostream"
+#include "windows.h"
 
 #pragma pack(2)//必须得写，否则sizeof得不到正确的结果 
-
-typedef unsigned char  BYTE;
-typedef unsigned short WORD;
-typedef unsigned long  DWORD;
-typedef long    LONG;
-
-typedef struct {
-	WORD    bfType;
-	DWORD   bfSize;
-	WORD    bfReserved1;
-	WORD    bfReserved2;
-	DWORD   bfOffBits;
-} BITMAPFILEHEADER;
-
-typedef struct {
-	DWORD      biSize;
-	LONG       biWidth;
-	LONG       biHeight;
-	WORD       biPlanes;
-	WORD       biBitCount;
-	DWORD      biCompression;
-	DWORD      biSizeImage;
-	LONG       biXPelsPerMeter;
-	LONG       biYPelsPerMeter;
-	DWORD      biClrUsed;
-	DWORD      biClrImportant;
-} BITMAPINFOHEADER;
-
-/* 彩色表:调色板 */
-typedef struct RGB_QUAD
-{
-	char rgbBlue;     // 蓝色强度   
-	char rgbGreen;    // 绿色强度   
-	char rgbRed;      
-	char rgbReserved;
-} RGBQUAD;
 
 BmpFileHelper::BmpFileHelper()
 {
@@ -47,6 +14,15 @@ BmpFileHelper::BmpFileHelper()
 
 BmpFileHelper::~BmpFileHelper()
 {
+}
+
+std::string BmpFileHelper::TCHAR2String(TCHAR* STR)
+{
+	int iLen = WideCharToMultiByte(CP_ACP, 0,STR, -1, NULL, 0, NULL, NULL);
+	char* chRtn = new char[iLen * sizeof(char)];
+	WideCharToMultiByte(CP_ACP, 0, STR, -1, chRtn, iLen, NULL, NULL);
+	std::string str(chRtn);
+	return str;
 }
 
 void BmpFileHelper::CreateBmpFile(int width, int height, unsigned char* pData, int nSize)
@@ -73,7 +49,7 @@ void BmpFileHelper::CreateBmpFile(int width, int height, unsigned char* pData, i
 
 
 	//RGB_QUAD plate[256] = {0};
-	RGB_QUAD *plate = new RGB_QUAD[256];
+	RGBQUAD *plate = new RGBQUAD[256];
 	for (int i = 0; i < 256; i++)
 	{
 		plate[i].rgbBlue = i;
@@ -81,9 +57,17 @@ void BmpFileHelper::CreateBmpFile(int width, int height, unsigned char* pData, i
 		plate[i].rgbRed = i;
 		plate[i].rgbReserved = 0;
 	}
-									// Write to file  
+
+	TCHAR  szFullPath[255];
+	ZeroMemory(szFullPath, 255);
+	GetModuleFileName(NULL, szFullPath, MAX_PATH);
+	(_tcsrchr(szFullPath, _T('\\')))[1] = 0;
+
+	std::string currentPath = TCHAR2String(szFullPath);
+	currentPath.append("output.bmp");
+
 	FILE *output;
-	fopen_s(&output, "d:\\output.bmp", "wb");
+	fopen_s(&output, currentPath.c_str(), "wb");
 
 	if (output == NULL)
 	{
@@ -93,7 +77,7 @@ void BmpFileHelper::CreateBmpFile(int width, int height, unsigned char* pData, i
 	{
 		fwrite(&fileHeader, sizeof(BITMAPFILEHEADER), 1, output);
 		fwrite(&bitmapHeader, sizeof(BITMAPINFOHEADER), 1, output);
-		fwrite(plate, sizeof(RGB_QUAD) * 256, 1, output);
+		fwrite(plate, sizeof(RGBQUAD) * 256, 1, output);
 		fwrite(pData, nSize, 1, output);
 		fclose(output);
 	}

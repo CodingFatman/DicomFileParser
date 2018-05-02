@@ -26,9 +26,18 @@ void DicomReader::LoadDicomFile(std::string dicomFileName)
 	}
 	else
 	{
-		ReadFileMetaInfo();
-		SkipOtherDicomtag();
-		ReadImageData();
+		bool isSupportTransferSyntax = ReadFileMetaInfo();
+		if (!isSupportTransferSyntax)
+		{
+			std::cout << "不支持的传输语法，目前仅支持显示VR小端字节序的传输语法";
+			getchar();
+		}
+		else
+		{
+			SkipOtherDicomtag();
+			ProcessPixelDataTag();
+			DisplayDicomTagValue();
+		}
 	}
 }
 
@@ -88,15 +97,73 @@ void DicomReader::ReadTagValue(DataElement* dataElement)
 		length = (byte4 << 24) + (byte3 << 16) + (byte2 << 8) + byte1;
 	}
 
-	char *value = new char[length]{};
+	char *value = new char[length + 1]{};
 	infile.read(value, length);
+	value[length] = '\0';
 
 	dataElement->value = value;
 	dataElement->valueLength = length;
 }
 
-void DicomReader::ReadFileMetaInfo()
+void DicomReader::ExtractTagValue()
 {
+	unsigned char low, high;
+
+	char* strPatientName = dicomData["0010-0010"]->value;
+	patientName = strPatientName;
+
+	char* strSamplesPerPixel = dicomData["0028-0002"]->value;
+	low = strSamplesPerPixel[0];
+	high = strSamplesPerPixel[1];
+	samplesPerPixel = (high << 8) + low;
+
+	char* strPixelRepresentation = dicomData["0028-0103"]->value;
+	low = strPixelRepresentation[0];
+	high = strPixelRepresentation[1];
+	pixelRepresentation = (high << 8) + low;
+
+	char* strRows = dicomData["0028-0010"]->value;
+	low = strRows[0];
+	high = strRows[1];
+	rows = (high << 8) + low;
+
+	char* strColumns = dicomData["0028-0011"]->value;
+	low = strColumns[0];
+	high = strColumns[1];
+	columns = (high << 8) + low;
+
+	char* strBitsAllocated = dicomData["0028-0100"]->value;
+	low = strBitsAllocated[0];
+	high = strBitsAllocated[1];
+	bitsAllocated = (high << 8) + low;
+
+	char* strBitsStored = dicomData["0028-0101"]->value;
+	low = strBitsStored[0];
+	high = strBitsStored[1];
+	bitsStored = (high << 8) + low;
+
+	char* strHighBit = dicomData["0028-0102"]->value;
+	low = strHighBit[0];
+	high = strHighBit[1];
+	highBit = (high << 8) + low;
+
+	char* strRescaleIntercept = dicomData["0028-1052"]->value;
+	rescaleIntercept = atof(strRescaleIntercept);
+
+	char* strRescaleSlop = dicomData["0028-1053"]->value;
+	rescaleSlop = atof(strRescaleSlop);
+
+	char* strWindowCenter = dicomData["0028-1050"]->value;
+	windowCenter = atoi(strWindowCenter);
+
+	char* strWindowWidth = dicomData["0028-1051"]->value;
+	windowWidth = atoi(strWindowWidth);
+}
+
+bool DicomReader::ReadFileMetaInfo()
+{
+	bool isSupportTransferSyntax = true;
+
 	currentTag = ReadDicomTag();
 	while (currentTag->group == "0002")
 	{
@@ -105,6 +172,16 @@ void DicomReader::ReadFileMetaInfo()
 
 		currentTag = ReadDicomTag();
 	}
+
+	char* strTransferSyntax = dicomData["0002-0010"]->value;
+	transferSyntax = strTransferSyntax;
+
+	if (transferSyntax.compare(CstExplicitVRLittleEndian) != 0)
+	{
+		isSupportTransferSyntax = false;
+	}
+
+	return isSupportTransferSyntax;
 }
 
 bool DicomReader::IsReservedVR(std::string vr)
@@ -136,123 +213,35 @@ void DicomReader::SkipOtherDicomtag()
 	} 
 }
 
-void DicomReader::ReadImageData()
+void DicomReader::ProcessPixelDataTag()
 {
-	unsigned char low, high;
-
-	if (currentTag->tag != "7FE0-0010") return;
-
-	ReadTagValue(currentTag);
-	dicomData[currentTag->tag] = currentTag;
-
-	char* strSamplesPerPixel = dicomData["0028-0002"]->value;
-	low = strSamplesPerPixel[0];
-	high = strSamplesPerPixel[1];
-	int samplesPerPixel = (high << 8) + low;
-
-	char* strPixelRepresentation = dicomData["0028-0103"]->value;
-	low = strPixelRepresentation[0];
-	high = strPixelRepresentation[1];
-	int pixelRepresentation = (high << 8) + low;
-
-	char* strRows = dicomData["0028-0010"]->value;
-	low = strRows[0];
-	high = strRows[1];
-	int rows = (high << 8) + low;
-
-	char* strColumns = dicomData["0028-0011"]->value;
-	low = strColumns[0];
-	high = strColumns[1];
-	int columns = (high << 8) + low;
-
-	char* strBitsAllocated = dicomData["0028-0100"]->value;
-	low = strBitsAllocated[0];
-	high = strBitsAllocated[1];
-	int bitsAllocated = (high << 8) + low;
-
-	char* strBitsStored = dicomData["0028-0101"]->value;
-	low = strBitsStored[0];
-	high = strBitsStored[1];
-	int bitsStored = (high << 8) + low;
-
-	char* strHighBit = dicomData["0028-0102"]->value;
-	low = strHighBit[0];
-	high = strHighBit[1];
-	int highBit = (high << 8) + low;
-
-	char* strRescaleIntercept = dicomData["0028-1052"]->value;
-	float rescaleIntercept = atof(strRescaleIntercept);
-
-	char* strRescaleSlop = dicomData["0028-1053"]->value;
-	float rescaleSlop = atof(strRescaleSlop);
-
-	char* strWindowCenter = dicomData["0028-1050"]->value;
-	int windowCenter = atoi(strWindowCenter);
-
-	char* strWindowWidth = dicomData["0028-1051"]->value;
-	int windowWidth = atoi(strWindowWidth);
-
-	DataElement *imageData = dicomData["7FE0-0010"];
-
+	ExtractTagValue();
 	if (pixelRepresentation == 0)
 	{
-		//char low, high;
-
-		char* strSmallestPixelValue = dicomData["0028-0106"]->value;
-		low = strSmallestPixelValue[0];
-		high = strSmallestPixelValue[1];
-		short smallestPixelValue = (high << 8) + low;
-
-		char* strLargestPixelValue = dicomData["0028-0107"]->value;
-		low = strLargestPixelValue[0];
-		high = strLargestPixelValue[1];
-		short largestPixelValue = (high << 8) + low;
-
-	    unsigned short *pixelData = new unsigned short[rows * columns]{};
-		for (int i = 0; i < rows; i++)
-		{
-			for (int j = 0; j < columns; j++)
-			{
-				int index = i * columns + j;
-
-				low = imageData->value[2 * index];
-				high = imageData->value[2 * index + 1];
-				unsigned short sourceValue = (high << 8) + low;
-				pixelData[index] = sourceValue;
-			}
-		}
-
-		//int maxValue = windowCenter + (windowWidth / 2);
-		//int minValue = windowCenter - (windowWidth / 2);
-
-		int maxValue = (2 * windowCenter + windowWidth) / 2.0 + 0.5;
-		int minValue = (2 * windowCenter - windowWidth) / 2.0 + 0.5;
-		unsigned char *bmpData = new unsigned char[rows * columns]{};
-		for (int i = 0; i < rows; i++)
-		{
-			for (int j = 0; j < columns; j++)
-			{
-				unsigned short pixelValue = pixelData[i*columns + j];
-				int hu = pixelValue * rescaleSlop + rescaleIntercept;
-
-				//int displayValue = (hu / ((maxValue - minValue) * 1.0)) * 255;
-				int displayValue = (hu-minValue)*255.0 / (double)(maxValue - minValue);
-				//int displayValue = (pixelValue / ((maxValue - minValue) * 1.0)) * 255;
-
-				if (displayValue > 255) displayValue = 255;
-
-				if (displayValue < 0) displayValue = 0;
-
-				bmpData[(rows - i - 1)*columns + j] = displayValue;
-				if ((displayValue > 0) && (displayValue < 256))
-				{
-					//std::cout << index << ":" << displayValue << std::endl;
-				}
-			}
-		}
-
-		BmpFileHelper bmpHelper;
-		bmpHelper.CreateBmpFile(columns, rows, bmpData, rows * columns);
+		unsigned short* pixelData = ReadPixelData<unsigned short>();
+		SavePixelDataTo8BitBmpFile(pixelData);
 	}
-	
+	else
+	{
+		short* pixelData = ReadPixelData<short>();
+		SavePixelDataTo8BitBmpFile(pixelData);
+	}
+
+	std::cout << patientName <<"的Dicom图像已经成功解析，并转存为BMP格式" << std::endl;
+}
+
+void DicomReader::DisplayDicomTagValue()
+{
+  std::cout << "0010-0010 patientName:" << patientName << std::endl;
+  std::cout << "0028-0002 samplesPerPixel:" << samplesPerPixel << std::endl;
+  std::cout << "0028-0103 pixelRepresentation:" << pixelRepresentation << std::endl;
+  std::cout << "0028-0010 rows:" << rows << std::endl;
+  std::cout << "0028-0011 columns:" << columns << std::endl;
+  std::cout << "0028-0100 bitsAllocated:" << bitsAllocated << std::endl;
+  std::cout << "0028-0101 bitsStored:" << bitsStored << std::endl;
+  std::cout << "0028-0102 highBit:" << highBit << std::endl;
+  std::cout << "0028-1052 rescaleIntercept:" << rescaleIntercept << std::endl;
+  std::cout << "0028-1053 rescaleSlop:" << rescaleSlop << std::endl;
+  std::cout << "0028-1050 windowCenter:" << windowCenter << std::endl;
+  std::cout << "0028-1051 windowWidth:" << windowWidth << std::endl;
 }
