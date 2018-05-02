@@ -20,7 +20,7 @@ int main()
 	DicomReader reader;
 	reader.LoadDicomFile(currentPath);
 
-	std::cout << "按回车键结束程序";
+	std::cout << "press enter key to finish programme";
 	getchar();
 
 	return 0;
