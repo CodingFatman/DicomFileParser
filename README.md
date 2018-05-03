@@ -2,7 +2,7 @@
 
 1. write this code for a little girl's school work
 
-2. it only surpport explicit little endian vr
+2. it only surpport explicit vr little endian 
 
 3. it was written in c++
 
