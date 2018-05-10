@@ -29,7 +29,7 @@ void DicomReader::LoadDicomFile(std::string dicomFileName)
 		bool isSupportTransferSyntax = ReadFileMetaInfo();
 		if (!isSupportTransferSyntax)
 		{
-			std::cout << "unsupported transfer syntax. it only support explicity little endian vr";
+			std::cout << "unsupported transfer syntax. it only support explicity vr little endian";
 			getchar();
 		}
 		else
