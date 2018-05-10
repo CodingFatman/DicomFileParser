@@ -249,30 +249,28 @@ void DicomReader::DisplayDicomTagValue()
 template<typename PixelType>
 PixelType* DicomReader::ReadPixelData()
 {
+	if (currentTag->tag != "7FE0-0010") return NULL;
+
+	ReadTagValue(currentTag);
+	dicomData[currentTag->tag] = currentTag;
+
+	unsigned char low, high;
+	DataElement *imageData = dicomData["7FE0-0010"];
+	PixelType *pixelData = new PixelType[rows * columns]{};
+	for (int i = 0; i < rows; i++)
 	{
-		if (currentTag->tag != "7FE0-0010") return NULL;
-
-		ReadTagValue(currentTag);
-		dicomData[currentTag->tag] = currentTag;
-
-		unsigned char low, high;
-		DataElement *imageData = dicomData["7FE0-0010"];
-		PixelType *pixelData = new PixelType[rows * columns]{};
-		for (int i = 0; i < rows; i++)
+		for (int j = 0; j < columns; j++)
 		{
-			for (int j = 0; j < columns; j++)
-			{
-				int index = i * columns + j;
+			int index = i * columns + j;
 
-				low = imageData->value[2 * index];
-				high = imageData->value[2 * index + 1];
-				PixelType sourceValue = (high << 8) + low;
-				pixelData[index] = sourceValue;
-			}
+			low = imageData->value[2 * index];
+			high = imageData->value[2 * index + 1];
+			PixelType sourceValue = (high << 8) + low;
+			pixelData[index] = sourceValue;
 		}
-
-		return pixelData;
 	}
+
+	return pixelData;
 }
 
 template<typename PixelType>
